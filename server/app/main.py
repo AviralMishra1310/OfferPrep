@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.core.config import settings
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+)
 
 
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to OfferPrep API"
+        "message": f"Welcome to {settings.APP_NAME} API"
     }
