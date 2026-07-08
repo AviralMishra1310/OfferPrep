@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from sqlalchemy import text
 
 from app.core.config import settings
+from app.database.database import engine
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -10,6 +12,9 @@ app = FastAPI(
 
 @app.get("/")
 def home():
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
     return {
-        "message": f"Welcome to {settings.APP_NAME} API"
+        "message": "Database Connected Successfully"
     }
