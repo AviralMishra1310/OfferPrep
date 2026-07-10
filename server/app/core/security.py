@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import JWTError, jwt
+from fastapi import HTTPException
 from app.core.config import settings
 
 pwd_context = CryptContext(
@@ -29,3 +30,18 @@ def create_access_token(data: dict):
         settings.JWT_SECRET,
         algorithm="HS256",
     )
+
+def verify_access_token(token: str):
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=["HS256"]
+        )
+        return payload
+
+    except JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )

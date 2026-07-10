@@ -8,6 +8,7 @@ from app.core.security import (
     verify_password,
     create_access_token,
 )
+from app.core.dependencies import get_current_user
 
 router = APIRouter(
     prefix="/auth",
@@ -69,4 +70,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": token,
         "token_type": "bearer"
+    }
+
+@router.get("/profile")
+def profile(current_user=Depends(get_current_user)):
+    return {
+        "message": "Profile fetched successfully",
+        "email": current_user["sub"]
     }
