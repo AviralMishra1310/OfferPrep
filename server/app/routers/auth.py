@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from app.database.dependencies import get_db
 from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin
-from app.core.security import hash_password, verify_password
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+)
 
 router = APIRouter(
     prefix="/auth",
@@ -56,6 +60,13 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
             detail="Invalid password"
         )
 
+    token = create_access_token(
+        {
+            "sub": existing_user.email
+        }
+    )
+
     return {
-        "message": "Login Successful"
+        "access_token": token,
+        "token_type": "bearer"
     }
