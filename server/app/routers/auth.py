@@ -73,8 +73,16 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.get("/profile")
-def profile(current_user=Depends(get_current_user)):
+def profile(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    user = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
     return {
-        "message": "Profile fetched successfully",
-        "email": current_user["sub"]
+        "name": user.name,
+        "email": user.email,
     }
