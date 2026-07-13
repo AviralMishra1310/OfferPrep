@@ -26,28 +26,19 @@ function Resume() {
     };
 
     const handleRemove = () => {
-
         setFile(null);
         setMessage("");
-
         if (inputRef.current) {
             inputRef.current.value = "";
         }
-
     };
 
     const handleUpload = async () => {
-
         if (!file) return;
-
         try {
-
             setUploading(true);
-
             const formData = new FormData();
-
             formData.append("file", file);
-
             const res = await api.post(
                 "/resume/upload",
                 formData,
@@ -57,30 +48,20 @@ function Resume() {
                     },
                 }
             );
-
             setMessage(res.data.message);
-
-        } catch (err) {
-
+        }catch (err) {
             setMessage(
                 err.response?.data?.detail ||
                 "Upload Failed"
             );
-
         } finally {
-
             setUploading(false);
-
         }
-
     };
 
     return (
-
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-100 flex justify-center items-center p-6">
-
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl p-10">
-
                 <h1 className="text-4xl font-bold text-center text-gray-800">
                     Resume Management
                 </h1>
@@ -93,26 +74,19 @@ function Resume() {
                     onClick={() => inputRef.current.click()}
                     className="border-2 border-dashed border-blue-400 rounded-2xl p-12 cursor-pointer hover:bg-blue-50 hover:border-blue-600 transition-all duration-300"
                 >
-
                     <div className="flex flex-col items-center">
-
                         <div className="bg-blue-100 rounded-full p-5">
-
                             <Upload
                                 size={55}
                                 className="text-blue-600"
                             />
-
                         </div>
-
                         <h2 className="text-2xl font-semibold mt-6 text-gray-800">
                             Drag & Drop Resume Here
                         </h2>
-
                         <p className="text-gray-500 my-4">
                             OR
                         </p>
-
                         <button
                             type="button"
                             className="bg-blue-600 hover:bg-blue-700 transition text-white px-7 py-3 rounded-xl font-semibold shadow-md"
