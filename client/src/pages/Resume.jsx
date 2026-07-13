@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import api from "../api/api";
 import {
     Upload,
     FileText,
@@ -10,21 +11,72 @@ import {
 function Resume() {
 
     const [file, setFile] = useState(null);
+    const [message, setMessage] = useState("");
+    const [uploading, setUploading] = useState(false);
 
     const inputRef = useRef(null);
 
     const handleChange = (e) => {
+
         if (e.target.files.length > 0) {
             setFile(e.target.files[0]);
+            setMessage("");
         }
+
     };
 
     const handleRemove = () => {
+
         setFile(null);
-        inputRef.current.value = "";
+        setMessage("");
+
+        if (inputRef.current) {
+            inputRef.current.value = "";
+        }
+
+    };
+
+    const handleUpload = async () => {
+
+        if (!file) return;
+
+        try {
+
+            setUploading(true);
+
+            const formData = new FormData();
+
+            formData.append("file", file);
+
+            const res = await api.post(
+                "/resume/upload",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setMessage(res.data.message);
+
+        } catch (err) {
+
+            setMessage(
+                err.response?.data?.detail ||
+                "Upload Failed"
+            );
+
+        } finally {
+
+            setUploading(false);
+
+        }
+
     };
 
     return (
+
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-100 flex justify-center items-center p-6">
 
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl p-10">
@@ -124,6 +176,7 @@ function Resume() {
                                     />
 
                                     <button
+                                        type="button"
                                         onClick={() => inputRef.current.click()}
                                         className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
                                     >
@@ -132,6 +185,7 @@ function Resume() {
                                     </button>
 
                                     <button
+                                        type="button"
                                         onClick={handleRemove}
                                         className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
                                     >
@@ -150,20 +204,33 @@ function Resume() {
                                 No Resume Selected
 
                             </div>
+
                     }
 
                 </div>
-
                 <button
-                    disabled={!file}
+                    type="button"
+                    onClick={handleUpload}
+                    disabled={!file || uploading}
                     className={`mt-10 w-full py-4 rounded-xl text-lg font-semibold transition duration-300 ${
-                        file
+                        file && !uploading
                             ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                 >
-                    Upload Resume
+                    {
+                        uploading
+                            ? "Uploading..."
+                            : "Upload Resume"
+                    }
                 </button>
+                {
+                    message && (
+                        <p className="text-center mt-5 font-semibold text-green-600">
+                            {message}
+                        </p>
+                    )
+                }
                 <div className="mt-10 border-t pt-8">
                     <h2 className="text-xl font-semibold">
                         Uploaded Resume
