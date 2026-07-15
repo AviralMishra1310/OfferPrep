@@ -8,34 +8,49 @@ import {
     LogOut
 } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 function Sidebar() {
+
+    const navigate = useNavigate();
 
     const menus = [
         {
             title: "Dashboard",
-            icon: LayoutDashboard
+            icon: LayoutDashboard,
+            action: () => navigate("/dashboard"),
         },
         {
             title: "Resume",
-            icon: FileText
+            icon: FileText,
+            action: () => navigate("/resume"),
         },
         {
             title: "AI Interview",
-            icon: Brain
+            icon: Brain,
+            action: () => alert("Coming in Phase 4"),
         },
         {
             title: "Analytics",
-            icon: BarChart3
+            icon: BarChart3,
+            action: () => alert("Coming in Phase 5"),
         },
         {
             title: "History",
-            icon: History
+            icon: History,
+            action: () => alert("Coming in Phase 6"),
         },
         {
             title: "Settings",
-            icon: Settings
+            icon: Settings,
+            action: () => alert("Coming in Phase 7"),
         }
     ];
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
     return (
         <aside className="w-72 bg-slate-900 text-white flex flex-col">
@@ -48,6 +63,7 @@ function Sidebar() {
                     Interview Preparation Platform
                 </p>
             </div>
+
             <nav className="flex-1 px-5 py-6">
                 {
                     menus.map((item) => {
@@ -55,10 +71,11 @@ function Sidebar() {
                         return (
                             <button
                                 key={item.title}
+                                onClick={item.action}
                                 className="w-full flex items-center gap-4 px-5 py-4 rounded-xl hover:bg-slate-800 transition mb-3"
                             >
                                 <Icon size={22} />
-                                <span className="font-medium">
+                                <span>
                                     {item.title}
                                 </span>
                             </button>
@@ -69,7 +86,8 @@ function Sidebar() {
 
             <div className="p-5 border-t border-slate-700">
                 <button
-                    className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 transition rounded-xl py-3 font-semibold"
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 rounded-xl py-3 font-semibold"
                 >
                     <LogOut size={20} />
                     Logout
