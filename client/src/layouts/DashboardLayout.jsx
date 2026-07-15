@@ -1,11 +1,12 @@
+import { Outlet } from "react-router-dom";
 import Sidebar from "../components/dashboard/Sidebar";
 
-function DashboardLayout({ children }) {
+function DashboardLayout() {
     return (
-        <div className="flex min-h-screen bg-slate-100">
+        <div className="min-h-screen flex bg-slate-100">
             <Sidebar />
-            <main className="flex-1 p-8">
-                {children}
+            <main className="flex-1 p-10 overflow-y-auto">
+                <Outlet />
             </main>
         </div>
     );

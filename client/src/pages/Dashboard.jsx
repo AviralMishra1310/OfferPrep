@@ -1,58 +1,46 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import api from "../api/api";
-
+import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
-import ProfileCard from "../components/dashboard/ProfileCard";
-import ResumeCard from "../components/dashboard/ResumeCard";
+import HomeSection from "./dashboard/HomeSection";
+import ResumeSection from "./dashboard/ResumeSection";
+import InterviewSection from "./dashboard/InterviewSection";
+import AnalyticsSection from "./dashboard/AnalyticsSection";
+import HistorySection from "./dashboard/HistorySection";
+import SettingsSection from "./dashboard/SettingsSection";
 
 function Dashboard() {
-    const navigate = useNavigate();
-    const [user, setUser] = useState({
-        name: "",
-        email: "",
-    });
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const res = await api.get("/auth/profile");
-                setUser(res.data);
-            } catch (err) {
-                console.log(err);
-                localStorage.removeItem("token");
-                navigate("/login");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfile();
-    }, [navigate]);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen text-2xl">
-                Loading...
-            </div>
-        );
-    }
     return (
-        <DashboardLayout>
-            <div>
-                <h1 className="text-4xl font-bold">
-                    Welcome, {user.name} 👋
-                </h1>
-                <p className="text-gray-500 mt-2">
-                    Manage your interview preparation from one place.
-                </p>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
-                <ProfileCard user={user} />
-                <ResumeCard />
-            </div>
-        </DashboardLayout>
+        <Routes>
+            <Route element={<DashboardLayout />}>
+                <Route
+                    path="/"
+                    element={<Navigate to="home" replace />}
+                />
+                <Route
+                    path="home"
+                    element={<HomeSection />}
+                />
+                <Route
+                    path="resume"
+                    element={<ResumeSection />}
+                />
+                <Route
+                    path="interview"
+                    element={<InterviewSection />}
+                />
+                <Route
+                    path="analytics"
+                    element={<AnalyticsSection />}
+                />
+                <Route
+                    path="history"
+                    element={<HistorySection />}
+                />
+                <Route
+                    path="settings"
+                    element={<SettingsSection />}
+                />
+            </Route>
+        </Routes>
     );
 }
 

@@ -5,46 +5,43 @@ import {
     BarChart3,
     History,
     Settings,
-    LogOut
+    LogOut,
 } from "lucide-react";
-
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Sidebar() {
-
     const navigate = useNavigate();
-
     const menus = [
         {
             title: "Dashboard",
             icon: LayoutDashboard,
-            action: () => navigate("/dashboard"),
+            path: "/dashboard/home",
         },
         {
             title: "Resume",
             icon: FileText,
-            action: () => navigate("/resume"),
+            path: "/dashboard/resume",
         },
         {
             title: "AI Interview",
             icon: Brain,
-            action: () => alert("Coming in Phase 4"),
+            path: "/dashboard/interview",
         },
         {
             title: "Analytics",
             icon: BarChart3,
-            action: () => alert("Coming in Phase 5"),
+            path: "/dashboard/analytics",
         },
         {
             title: "History",
             icon: History,
-            action: () => alert("Coming in Phase 6"),
+            path: "/dashboard/history",
         },
         {
             title: "Settings",
             icon: Settings,
-            action: () => alert("Coming in Phase 7"),
-        }
+            path: "/dashboard/settings",
+        },
     ];
 
     const handleLogout = () => {
@@ -58,36 +55,37 @@ function Sidebar() {
                 <h1 className="text-3xl font-bold">
                     OfferPrep
                 </h1>
-
                 <p className="text-slate-400 mt-2">
                     Interview Preparation Platform
                 </p>
             </div>
-
             <nav className="flex-1 px-5 py-6">
                 {
                     menus.map((item) => {
                         const Icon = item.icon;
                         return (
-                            <button
+                            <NavLink
                                 key={item.title}
-                                onClick={item.action}
-                                className="w-full flex items-center gap-4 px-5 py-4 rounded-xl hover:bg-slate-800 transition mb-3"
+                                to={item.path}
+                                className={({ isActive }) =>
+                                    `w-full flex items-center gap-4 px-5 py-4 rounded-xl mb-3 transition ${
+                                        isActive
+                                            ? "bg-blue-600"
+                                            : "hover:bg-slate-800"
+                                    }`
+                                }
                             >
                                 <Icon size={22} />
-                                <span>
-                                    {item.title}
-                                </span>
-                            </button>
+                                {item.title}
+                            </NavLink>
                         );
                     })
                 }
             </nav>
-
             <div className="p-5 border-t border-slate-700">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 rounded-xl py-3 font-semibold"
+                    className="w-full bg-red-600 hover:bg-red-700 rounded-xl py-3 flex justify-center items-center gap-2"
                 >
                     <LogOut size={20} />
                     Logout
