@@ -36,10 +36,28 @@ function ResumeUploader(){
     };
 
     const handleChange = (e) => {
-        if (e.target.files.length > 0) {
-            setFile(e.target.files[0]);
-            setMessage("");
+        const selectedFile = e.target.files[0];
+        if (!selectedFile) return;
+        setMessage("");
+
+        if (selectedFile.type !== "application/pdf") {
+            setMessage("❌ Only PDF files are allowed.");
+            inputRef.current.value = "";
+            return;
         }
+
+        if (selectedFile.size > 5 * 1024 * 1024) {
+            setMessage("❌ File size should not exceed 5 MB.");
+            inputRef.current.value = "";
+            return;
+        }
+
+        if (selectedFile.size === 0) {
+            setMessage("❌ Empty file is not allowed.");
+            inputRef.current.value = "";
+            return;
+        }
+        setFile(selectedFile);
     };
 
     const handleRemove = () => {
@@ -89,7 +107,7 @@ function ResumeUploader(){
         try {
             const res = await api.delete("/resume/delete");
             setMessage(res.data.message);
-            setUploadedResume(null);
+            await fetchLatestResume();
             setFile(null);
             if (inputRef.current) {
                 inputRef.current.value = "";
@@ -139,7 +157,7 @@ function ResumeUploader(){
                         </button>
 
                         <p className="text-gray-400 text-sm mt-5">
-                            Supported Format : PDF
+                            Supported Format : PDF (Maximum 5 MB)
                         </p>
 
                         <input
@@ -230,9 +248,15 @@ function ResumeUploader(){
                 </button>
                 {
                     message && (
-                        <p className="text-center mt-5 font-semibold text-green-600">
+                        <p
+                            className={`text-center mt-5 font-semibold ${
+                                message.startsWith("❌")
+                                    ? "text-red-600"
+                                    : "text-green-600"
+                            }`}
+                        >
                             {message}
-                        </p>
+                        </p>    
                     )
                 }
                 <div className="mt-10 border-t pt-8">
