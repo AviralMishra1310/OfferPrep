@@ -1,11 +1,13 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import api from "../../api/api";
 import {
     Upload,
     FileText,
     CheckCircle,
     Trash2,
-    RefreshCcw
+    RefreshCcw,
+    Eye
 } from "lucide-react";
 
 function ResumeUploader(){
@@ -13,16 +15,31 @@ function ResumeUploader(){
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [uploading, setUploading] = useState(false);
-
+    const [uploadedResume, setUploadedResume] = useState(null);
     const inputRef = useRef(null);
 
-    const handleChange = (e) => {
+    useEffect(() => {
+        fetchLatestResume();
+    }, []);
 
+    const fetchLatestResume = async () => {
+        try {
+            const res = await api.get("/resume/latest");
+            if (res.data) {
+                setUploadedResume(res.data);
+            } else {
+                setUploadedResume(null);
+            }
+        }catch (err) {
+            console.log(err);
+        }
+    };
+
+    const handleChange = (e) => {
         if (e.target.files.length > 0) {
             setFile(e.target.files[0]);
             setMessage("");
         }
-
     };
 
     const handleRemove = () => {
@@ -49,6 +66,11 @@ function ResumeUploader(){
                 }
             );
             setMessage(res.data.message);
+            await fetchLatestResume();
+            setFile(null);
+            if (inputRef.current) {
+                inputRef.current.value = "";
+            }
         }catch (err) {
             setMessage(
                 err.response?.data?.detail ||
@@ -56,6 +78,28 @@ function ResumeUploader(){
             );
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete your resume?"
+        );
+        if (!confirmDelete) return;
+        try {
+            const res = await api.delete("/resume/delete");
+            setMessage(res.data.message);
+            setUploadedResume(null);
+            setFile(null);
+            if (inputRef.current) {
+                inputRef.current.value = "";
+            }
+        }
+        catch (err) {
+            setMessage(
+                err.response?.data?.detail ||
+                "Delete Failed"
+            );
         }
     };
 
@@ -115,35 +159,24 @@ function ResumeUploader(){
                     <h2 className="text-xl font-semibold mb-5">
                         Selected Resume
                     </h2>
-
                     {
                         file ?
-
                             <div className="flex justify-between items-center bg-green-50 border border-green-300 rounded-2xl p-5">
-
                                 <div className="flex gap-4 items-center">
-
                                     <FileText
                                         size={40}
                                         className="text-blue-600"
                                     />
-
                                     <div>
-
                                         <p className="font-semibold text-lg">
                                             {file.name}
                                         </p>
-
                                         <p className="text-gray-500">
                                             {(file.size / 1024).toFixed(2)} KB
                                         </p>
-
                                     </div>
-
                                 </div>
-
                                 <div className="flex items-center gap-3">
-
                                     <CheckCircle
                                         className="text-green-600"
                                         size={28}
@@ -174,11 +207,8 @@ function ResumeUploader(){
                             :
 
                             <div className="border rounded-xl bg-gray-50 py-8 text-center text-gray-500">
-
                                 No Resume Selected
-
                             </div>
-
                     }
 
                 </div>
@@ -209,9 +239,72 @@ function ResumeUploader(){
                     <h2 className="text-xl font-semibold">
                         Uploaded Resume
                     </h2>
-                    <div className="mt-4 bg-gray-50 rounded-xl border p-6 text-gray-500 text-center">
-                        No Resume Uploaded Yet
-                    </div>
+                   {
+                    uploadedResume ?
+                        <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-6">
+                            <h3 className="font-semibold text-lg">
+                                {uploadedResume.filename}
+                            </h3>
+                            <div className="flex justify-between items-center mt-5">
+                                <div>
+                                    <p className="text-gray-500">
+                                        Uploaded At
+                                    </p>
+                                    <p>
+                                        {new Date(
+                                            uploadedResume.uploaded_at
+                                        ).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            try {
+                                                const res = await api.get(
+                                                    "/resume/view",
+                                                    {
+                                                        responseType: "blob",
+                                                    }
+                                                );
+                                                const file = new Blob(
+                                                    [res.data],
+                                                    {
+                                                        type: "application/pdf",
+                                                    }
+                                                );
+                                                const fileURL = URL.createObjectURL(file);
+                                                window.open(
+                                                    fileURL + "#toolbar=1&navpanes=0&scrollbar=1",
+                                                    "_blank"
+                                                );
+                                                setTimeout(() => {
+                                                    URL.revokeObjectURL(fileURL);
+                                                }, 1000);
+                                            } catch (err) {
+                                                console.log(err);
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                                    >
+                                        <Eye size={18} />
+                                        View
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        :
+                        <div className="mt-4 bg-gray-50 rounded-xl border p-6 text-center text-gray-500">
+                            No Resume Uploaded Yet
+                        </div>
+                }
                 </div>
             </div>
         </div>
