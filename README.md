@@ -72,18 +72,24 @@ The goal of OfferPrep is to become a complete one-stop interview preparation eco
 
 ---
 
-# 🚀 Upcoming Features
+# 📈 Current Progress
 
-- Resume Upload
+## ✅ Completed
+
+- Authentication Module
+- JWT Authentication
+- Dashboard
+- PostgreSQL Integration
+- React Frontend
+- FastAPI Backend
+- Resume Management System
+
+## 🚀 Next Phase
+
+- AI/ML Resume Pipeline
 - Resume Parsing
-- AI Interview Generation
-- AI Interview Feedback
-- Interview History
-- Analytics Dashboard
-- Profile Management
-- Resume Score
-- AI Career Suggestions
-- Deployment
+- Resume Score Prediction
+- Placement Readiness Prediction
 
 ---
 
@@ -852,8 +858,8 @@ OfferPrep is being developed in multiple phases to ensure a scalable and maintai
 | Phase | Status |
 |-------|--------|
 | ✅ Phase 1 - Authentication & Dashboard | Completed |
-| 🚧 Phase 2 - Resume Upload | In Progress |
-| ⏳ Phase 3 - Resume Parsing | Planned |
+| ✅ Phase 2 - Resume Management System | Completed |
+| 🚀 Phase 3 - AI/ML Resume Pipeline | Next |
 | ⏳ Phase 4 - AI Interview Generation | Planned |
 | ⏳ Phase 5 - AI Feedback & Scoring | Planned |
 | ⏳ Phase 6 - Interview History & Analytics | Planned |
