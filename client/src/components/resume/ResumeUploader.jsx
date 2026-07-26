@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-
 import api from "../../api/api";
 import {
     Upload,
@@ -7,21 +6,32 @@ import {
     CheckCircle,
     Trash2,
     RefreshCcw,
-    Eye
+    Eye,
+    ScanSearch,
+    User,
+    Mail,
+    Phone,
+    GraduationCap,
+    BriefcaseBusiness,
+    FolderKanban,
+    Code2
 } from "lucide-react";
 
-function ResumeUploader(){
-
+function ResumeUploader() {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [uploading, setUploading] = useState(false);
     const [uploadedResume, setUploadedResume] = useState(null);
+    const [parsing, setParsing] = useState(false);
+    const [candidateProfile, setCandidateProfile] = useState(null);
     const inputRef = useRef(null);
 
     useEffect(() => {
         fetchLatestResume();
     }, []);
-
+    // =========================================================
+    // FETCH LATEST RESUME
+    // =========================================================
     const fetchLatestResume = async () => {
         try {
             const res = await api.get("/resume/latest");
@@ -30,28 +40,31 @@ function ResumeUploader(){
             } else {
                 setUploadedResume(null);
             }
-        }catch (err) {
+        } catch (err) {
             console.log(err);
         }
     };
-
+    // =========================================================
+    // SELECT FILE
+    // =========================================================
     const handleChange = (e) => {
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
         setMessage("");
-
+        setCandidateProfile(null);
+        // PDF validation
         if (selectedFile.type !== "application/pdf") {
             setMessage("❌ Only PDF files are allowed.");
             inputRef.current.value = "";
             return;
         }
-
+        // Maximum 5 MB
         if (selectedFile.size > 5 * 1024 * 1024) {
             setMessage("❌ File size should not exceed 5 MB.");
             inputRef.current.value = "";
             return;
         }
-
+        // Empty file validation
         if (selectedFile.size === 0) {
             setMessage("❌ Empty file is not allowed.");
             inputRef.current.value = "";
@@ -59,7 +72,9 @@ function ResumeUploader(){
         }
         setFile(selectedFile);
     };
-
+    // =========================================================
+    // REMOVE SELECTED FILE
+    // =========================================================
     const handleRemove = () => {
         setFile(null);
         setMessage("");
@@ -68,12 +83,21 @@ function ResumeUploader(){
         }
     };
 
+    // =========================================================
+    // UPLOAD RESUME
+    // =========================================================
     const handleUpload = async () => {
         if (!file) return;
         try {
             setUploading(true);
+            setMessage("");
+            setCandidateProfile(null);
+
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append(
+                "file",
+                file
+            );
             const res = await api.post(
                 "/resume/upload",
                 formData,
@@ -83,47 +107,140 @@ function ResumeUploader(){
                     },
                 }
             );
-            setMessage(res.data.message);
+            setMessage(
+                res.data.message
+            );
             await fetchLatestResume();
             setFile(null);
             if (inputRef.current) {
                 inputRef.current.value = "";
             }
-        }catch (err) {
+        } catch (err) {
             setMessage(
-                err.response?.data?.detail ||
-                "Upload Failed"
+                "❌ " +
+                (
+                    err.response?.data?.detail ||
+                    "Upload Failed"
+                )
             );
         } finally {
             setUploading(false);
         }
     };
-
+    // =========================================================
+    // VIEW RESUME
+    // =========================================================
+    const handleView = async () => {
+        try {
+            const res = await api.get(
+                "/resume/view",
+                {
+                    responseType: "blob",
+                }
+            );
+            const pdfFile = new Blob(
+                [res.data],
+                {
+                    type: "application/pdf",
+                }
+            );
+            const fileURL =
+                URL.createObjectURL(pdfFile);
+            window.open(
+                fileURL +
+                "#toolbar=1&navpanes=0&scrollbar=1",
+                "_blank"
+            );
+            setTimeout(() => {
+                URL.revokeObjectURL(
+                    fileURL
+                );
+            }, 1000);
+        } catch (err) {
+            console.log(err);
+            setMessage(
+                "❌ " +
+                (
+                    err.response?.data?.detail ||
+                    "Unable to view resume"
+                )
+            );
+        }
+    };
+    // =========================================================
+    // PARSE RESUME
+    // =========================================================
+    const handleParse = async () => {
+        try {
+            setParsing(true);
+            setMessage("");
+            setCandidateProfile(null);
+            const res = await api.post(
+                "/resume/parse"
+            );
+            setCandidateProfile(
+                res.data.candidate_profile
+            );
+            setMessage(
+                res.data.message
+            );
+                } catch (err) {
+            console.log(err);
+            setMessage(
+                "❌ " +
+                (
+                    err.response?.data?.detail ||
+                    "Resume parsing failed"
+                )
+            );
+        } finally {
+            setParsing(false);
+        }
+    };
+    // =========================================================
+    // DELETE RESUME
+    // =========================================================
     const handleDelete = async () => {
         const confirmDelete = window.confirm(
             "Are you sure you want to delete your resume?"
         );
         if (!confirmDelete) return;
         try {
-            const res = await api.delete("/resume/delete");
-            setMessage(res.data.message);
-            await fetchLatestResume();
+            setMessage("");
+            const res = await api.delete(
+                "/resume/delete"
+            );
+            setMessage(
+                res.data.message
+            );
+            setCandidateProfile(null);
+            setUploadedResume(null);
             setFile(null);
+            await fetchLatestResume();
             if (inputRef.current) {
                 inputRef.current.value = "";
             }
-        }
-        catch (err) {
+        } catch (err) {
             setMessage(
-                err.response?.data?.detail ||
-                "Delete Failed"
+                "❌ " +
+                (
+                    err.response?.data?.detail ||
+                    "Delete Failed"
+                )
             );
         }
     };
 
+
+    // =========================================================
+    // UI
+    // =========================================================
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-100 flex justify-center items-center p-6">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl p-10">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-10">
+                {/* =====================================================
+                    PAGE TITLE
+                ===================================================== */}
                 <h1 className="text-4xl font-bold text-center text-gray-800">
                     Resume Management
                 </h1>
@@ -131,9 +248,11 @@ function ResumeUploader(){
                 <p className="text-center text-gray-500 mt-3 mb-10">
                     Upload your latest resume (PDF only, Max 5 MB)
                 </p>
-
+                {/* =====================================================
+                    FILE SELECT AREA
+                ===================================================== */}
                 <div
-                    onClick={() => inputRef.current.click()}
+                    onClick={() => inputRef.current?.click()}
                     className="border-2 border-dashed border-blue-400 rounded-2xl p-12 cursor-pointer hover:bg-blue-50 hover:border-blue-600 transition-all duration-300"
                 >
                     <div className="flex flex-col items-center">
@@ -155,11 +274,9 @@ function ResumeUploader(){
                         >
                             Choose Resume
                         </button>
-
                         <p className="text-gray-400 text-sm mt-5">
                             Supported Format : PDF (Maximum 5 MB)
                         </p>
-
                         <input
                             ref={inputRef}
                             type="file"
@@ -167,18 +284,17 @@ function ResumeUploader(){
                             onChange={handleChange}
                             className="hidden"
                         />
-
                     </div>
-
                 </div>
-
+                {/* =====================================================
+                    SELECTED RESUME
+                ===================================================== */}
                 <div className="mt-10">
-
                     <h2 className="text-xl font-semibold mb-5">
                         Selected Resume
                     </h2>
                     {
-                        file ?
+                        file ? (
                             <div className="flex justify-between items-center bg-green-50 border border-green-300 rounded-2xl p-5">
                                 <div className="flex gap-4 items-center">
                                     <FileText
@@ -199,16 +315,14 @@ function ResumeUploader(){
                                         className="text-green-600"
                                         size={28}
                                     />
-
                                     <button
                                         type="button"
-                                        onClick={() => inputRef.current.click()}
+                                        onClick={() => inputRef.current?.click()}
                                         className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
                                     >
                                         <RefreshCcw size={18} />
                                         Replace
                                     </button>
-
                                     <button
                                         type="button"
                                         onClick={handleRemove}
@@ -217,19 +331,18 @@ function ResumeUploader(){
                                         <Trash2 size={18} />
                                         Remove
                                     </button>
-
                                 </div>
-
                             </div>
-
-                            :
-
+                        ) : (
                             <div className="border rounded-xl bg-gray-50 py-8 text-center text-gray-500">
                                 No Resume Selected
                             </div>
+                        )
                     }
-
                 </div>
+                {/* =====================================================
+                    UPLOAD BUTTON
+                ===================================================== */}
                 <button
                     type="button"
                     onClick={handleUpload}
@@ -246,6 +359,9 @@ function ResumeUploader(){
                             : "Upload Resume"
                     }
                 </button>
+                {/* =====================================================
+                    MESSAGE
+                ===================================================== */}
                 {
                     message && (
                         <p
@@ -256,83 +372,279 @@ function ResumeUploader(){
                             }`}
                         >
                             {message}
-                        </p>    
+
+                        </p>
                     )
                 }
+                {/* =====================================================
+                    UPLOADED RESUME
+                ===================================================== */}
                 <div className="mt-10 border-t pt-8">
                     <h2 className="text-xl font-semibold">
                         Uploaded Resume
                     </h2>
-                   {
-                    uploadedResume ?
-                        <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-6">
-                            <h3 className="font-semibold text-lg">
-                                {uploadedResume.filename}
-                            </h3>
-                            <div className="flex justify-between items-center mt-5">
-                                <div>
-                                    <p className="text-gray-500">
-                                        Uploaded At
-                                    </p>
-                                    <p>
-                                        {new Date(
-                                            uploadedResume.uploaded_at
-                                        ).toLocaleString()}
-                                    </p>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={async () => {
-                                            try {
-                                                const res = await api.get(
-                                                    "/resume/view",
-                                                    {
-                                                        responseType: "blob",
-                                                    }
-                                                );
-                                                const file = new Blob(
-                                                    [res.data],
-                                                    {
-                                                        type: "application/pdf",
-                                                    }
-                                                );
-                                                const fileURL = URL.createObjectURL(file);
-                                                window.open(
-                                                    fileURL + "#toolbar=1&navpanes=0&scrollbar=1",
-                                                    "_blank"
-                                                );
-                                                setTimeout(() => {
-                                                    URL.revokeObjectURL(fileURL);
-                                                }, 1000);
-                                            } catch (err) {
-                                                console.log(err);
-                                            }
-                                        }}
-                                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                                    >
-                                        <Eye size={18} />
-                                        View
-                                    </button>
+                    {
+                        uploadedResume ? (
+                            <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-6">
+                                <h3 className="font-semibold text-lg">
+                                    {uploadedResume.filename}
+                                </h3>
 
-                                    <button
-                                        type="button"
-                                        onClick={handleDelete}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                                        Delete
-                                    </button>
+
+                                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-5 mt-5">
+                                    <div>
+                                        <p className="text-gray-500">
+                                            Uploaded At
+                                        </p>
+                                        <p>
+                                            {
+                                                new Date(
+                                                    uploadedResume.uploaded_at
+                                                ).toLocaleString()
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        {/* VIEW */}
+                                        <button
+                                            type="button"
+                                            onClick={handleView}
+                                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                                        >
+                                            <Eye size={18} />
+                                            View
+                                        </button>
+                                        {/* PARSE */}
+                                        <button
+                                            type="button"
+                                            onClick={handleParse}
+                                            disabled={parsing}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white transition ${
+                                                parsing
+                                                    ? "bg-purple-300 cursor-not-allowed"
+                                                    : "bg-purple-600 hover:bg-purple-700"
+                                            }`}
+                                        >
+                                            <ScanSearch size={18} />
+                                            {
+                                                parsing
+                                                    ? "Parsing..."
+                                                    : "Parse Resume"
+                                            }
+                                        </button>
+                                        {/* DELETE */}
+                                        <button
+                                            type="button"
+                                            onClick={handleDelete}
+                                            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+                                        >
+                                            <Trash2 size={18} />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-4 bg-gray-50 rounded-xl border p-6 text-center text-gray-500">
+                                No Resume Uploaded Yet
+                            </div>
+                        )
+                    }
+                </div>
+
+                {/* =====================================================
+                    CANDIDATE PROFILE
+                ===================================================== */}
+                {
+                    candidateProfile && (
+                        <div className="mt-10 border-t pt-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <User
+                                    size={28}
+                                    className="text-purple-600"
+                                />
+                                <h2 className="text-2xl font-bold text-gray-800">
+                                    Candidate Profile
+                                </h2>
+                            </div>
+
+                            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6">
+                                {/* BASIC INFORMATION */}
+                                <div className="grid md:grid-cols-3 gap-5">
+                                    <div className="bg-white rounded-xl border p-4">
+                                        <div className="flex items-center gap-2 text-gray-500 mb-2">
+                                            <User size={18} />
+                                            <span>Name</span>
+                                        </div>
+
+                                        <p className="font-semibold">
+                                            {candidateProfile.name || "Not Found"}
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-white rounded-xl border p-4">
+                                        <div className="flex items-center gap-2 text-gray-500 mb-2">
+                                            <Mail size={18} />
+                                            <span>Email</span>
+                                        </div>
+
+                                        <p className="font-semibold break-all">
+                                            {candidateProfile.email || "Not Found"}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white rounded-xl border p-4">
+                                        <div className="flex items-center gap-2 text-gray-500 mb-2">
+                                            <Phone size={18} />
+                                            <span>Phone</span>
+                                        </div>
+
+                                        <p className="font-semibold">
+                                            {candidateProfile.phone || "Not Found"}
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* SKILLS */}
+                                <div className="mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Code2
+                                            size={22}
+                                            className="text-blue-600"
+                                        />
+                                        <h3 className="text-xl font-semibold">
+                                            Skills
+                                        </h3>
+                                    </div>
+                                    {
+                                        candidateProfile.skills?.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2">
+                                                {
+                                                    candidateProfile.skills.map(
+                                                        (skill, index) => (
+                                                            <span
+                                                                key={`${skill}-${index}`}
+                                                                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
+                                                            >
+                                                                {skill}
+                                                            </span>
+                                                        )
+                                                    )
+                                                }
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">
+                                                No skills detected.
+                                            </p>
+                                        )
+                                    }
+                                </div>
+                                {/* EDUCATION */}
+                                <div className="mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <GraduationCap
+                                            size={22}
+                                            className="text-green-600"
+                                        />
+                                        <h3 className="text-xl font-semibold">
+                                            Education
+                                        </h3>
+                                    </div>
+                                    {
+                                        candidateProfile.education?.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {
+                                                    candidateProfile.education.map(
+                                                        (item, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="bg-white border rounded-lg p-3"
+                                                            >
+                                                                {item}
+                                                            </div>
+                                                        )
+                                                    )
+                                                }
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">
+                                                No education information detected.
+                                            </p>
+                                        )
+                                    }
+                                </div>
+                                {/* PROJECTS */}
+                                <div className="mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <FolderKanban
+                                            size={22}
+                                            className="text-orange-600"
+                                        />
+                                        <h3 className="text-xl font-semibold">
+                                            Projects
+                                        </h3>
+                                    </div>
+                                    {
+                                        candidateProfile.projects?.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {
+                                                    candidateProfile.projects.map(
+                                                        (item, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="bg-white border rounded-lg p-3"
+                                                            >
+                                                                {item}
+                                                            </div>
+                                                        )
+                                                    )
+                                                }
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">
+                                                No projects detected.
+                                            </p>
+                                        )
+                                    }
+                                </div>
+                                {/* EXPERIENCE */}
+                                <div className="mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <BriefcaseBusiness
+                                            size={22}
+                                            className="text-indigo-600"
+                                        />
+                                        <h3 className="text-xl font-semibold">
+                                            Experience
+                                        </h3>
+                                    </div>
+                                    {
+                                        candidateProfile.experience?.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {
+                                                    candidateProfile.experience.map(
+                                                        (item, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="bg-white border rounded-lg p-3"
+                                                            >
+                                                                {item}
+                                                            </div>
+                                                        )
+                                                    )
+                                                }
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">
+                                                No experience detected.
+                                            </p>
+                                        )
+                                    }
                                 </div>
                             </div>
                         </div>
-                        :
-                        <div className="mt-4 bg-gray-50 rounded-xl border p-6 text-center text-gray-500">
-                            No Resume Uploaded Yet
-                        </div>
+                    )
                 }
-                </div>
             </div>
         </div>
     );
 }
-
 export default ResumeUploader;
