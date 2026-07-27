@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -33,4 +34,9 @@ class Resume(Base):
 
     user: Mapped["User"] = relationship(
         back_populates="resumes"
+    )
+
+    candidate_profile: Mapped[Optional["CandidateProfile"]] = relationship(
+        back_populates="resume",
+        uselist=False
     )
