@@ -27,8 +27,13 @@ function ResumeUploader() {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        fetchLatestResume();
+        const loadResumeData = async () => {
+            await fetchLatestResume();
+            await fetchCandidateProfile();
+        };
+        loadResumeData();
     }, []);
+
     // =========================================================
     // FETCH LATEST RESUME
     // =========================================================
@@ -44,6 +49,32 @@ function ResumeUploader() {
             console.log(err);
         }
     };
+
+    // =========================================================
+    // FETCH SAVED CANDIDATE PROFILE
+    // =========================================================
+
+    const fetchCandidateProfile = async () => {
+        try {
+            const res = await api.get(
+                "/resume/profile"
+            );
+            if (res.data) {
+                setCandidateProfile(
+                    res.data
+                );
+            } else {
+                setCandidateProfile(null);
+            }
+        } catch (err) {
+            console.log(
+                "Candidate profile fetch error:",
+                err
+            );
+            setCandidateProfile(null);
+        }
+    };
+
     // =========================================================
     // SELECT FILE
     // =========================================================
@@ -184,6 +215,7 @@ function ResumeUploader() {
             setMessage(
                 res.data.message
             );
+            await fetchCandidateProfile();
                 } catch (err) {
             console.log(err);
             setMessage(
