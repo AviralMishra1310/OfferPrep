@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "question": "What is the difference between an Array and a Linked List?"
+  },
+  {
+    "id": 2,
+    "question": "Explain the time complexity of Binary Search."
+  },
+  {
+    "id": 3,
+    "question": "What is Object-Oriented Programming?"
+  },
+  {
+    "id": 4,
+    "question": "What is the difference between Process and Thread?"
+  },
+  {
+    "id": 5,
+    "question": "Explain REST API."
+  },
+  {
+    "id": 6,
+    "question": "What is JWT Authentication?"
+  },
+  {
+    "id": 7,
+    "question": "What is SQL Injection?"
+  },
+  {
+    "id": 8,
+    "question": "Explain Normalization in SQL."
+  },
+  {
+    "id": 9,
+    "question": "What is the difference between Stack and Queue?"
+  },
+  {
+    "id": 10,
+    "question": "What is Multithreading?"
+  }
+]

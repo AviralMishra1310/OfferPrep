@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-
+from typing import List
 from app.database.base import Base
 
 
@@ -40,4 +40,9 @@ class InterviewSession(Base):
     user = relationship(
         "User",
         back_populates="interview_sessions"
+    )
+
+    answers: Mapped[List["InterviewAnswer"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan"
     )

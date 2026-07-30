@@ -24,6 +24,8 @@ from app.core.config import settings
 from app.models.user import User
 from app.models.resume import Resume
 from app.models.candidate_profile import CandidateProfile
+from app.models.interview import InterviewSession
+from app.models.interview_answer import InterviewAnswer
 
 target_metadata = Base.metadata
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
