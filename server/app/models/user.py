@@ -39,3 +39,8 @@ class User(Base):
         cascade="all, delete-orphan",
         uselist=False
     )
+
+    interview_sessions: Mapped[List["InterviewSession"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )

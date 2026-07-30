@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from app.database.dependencies import get_db
 from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin
@@ -17,8 +18,13 @@ router = APIRouter(
 
 
 @router.post("/register")
-def register(user: UserRegister, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
+def register(
+    user: UserRegister,
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(User).filter(
+        User.email == user.email
+    ).first()
 
     if existing_user:
         raise HTTPException(
@@ -39,8 +45,12 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         "message": "User Registered Successfully"
     }
 
+
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
 
     existing_user = db.query(User).filter(
         User.email == user.email
@@ -72,17 +82,13 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
+
 @router.get("/profile")
 def profile(
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
 
-    user = db.query(User).filter(
-        User.email == current_user["sub"]
-    ).first()
-
     return {
-        "name": user.name,
-        "email": user.email,
+        "name": current_user.name,
+        "email": current_user.email,
     }
