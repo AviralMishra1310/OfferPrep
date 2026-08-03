@@ -1,15 +1,28 @@
-from sqlalchemy import String, Integer, ForeignKey, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
 from typing import List
-from app.database.base import Base
 
+from sqlalchemy import (
+    String,
+    Integer,
+    ForeignKey,
+    DateTime,
+)
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
+from sqlalchemy.sql import func
+
+from app.database.base import Base
 
 class InterviewSession(Base):
 
     __tablename__ = "interview_sessions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id")
@@ -17,6 +30,14 @@ class InterviewSession(Base):
 
     role: Mapped[str] = mapped_column(
         String(100)
+    )
+
+    company: Mapped[str] = mapped_column(
+        String(100)
+    )
+
+    interview_type: Mapped[str] = mapped_column(
+        String(50)
     )
 
     difficulty: Mapped[str] = mapped_column(
@@ -35,6 +56,11 @@ class InterviewSession(Base):
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
+    )
+
+    completed_at: Mapped[DateTime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
     )
 
     user = relationship(

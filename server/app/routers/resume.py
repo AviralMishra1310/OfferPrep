@@ -46,7 +46,7 @@ def get_logged_in_user(
 ):
 
     user = db.query(User).filter(
-        User.email == current_user["sub"]
+        User.email == current_user.email
     ).first()
 
     if not user:
@@ -56,7 +56,6 @@ def get_logged_in_user(
         )
 
     return user
-
 
 # =========================================================
 # HELPER - GET LATEST RESUME

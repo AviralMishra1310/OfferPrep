@@ -1,9 +1,11 @@
-from pydantic import BaseModel
 from datetime import datetime
+from pydantic import BaseModel
 
 
 class InterviewStart(BaseModel):
     role: str
+    company: str
+    interview_type: str
     difficulty: str
     total_questions: int
 
@@ -11,6 +13,8 @@ class InterviewStart(BaseModel):
 class InterviewResponse(BaseModel):
     id: int
     role: str
+    company: str
+    interview_type: str
     difficulty: str
     total_questions: int
     status: str
@@ -31,3 +35,7 @@ class AnswerRequest(BaseModel):
     question_id: int
     question: str
     answer: str
+
+
+class InterviewSubmit(BaseModel):
+    session_id: int
